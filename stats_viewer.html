@@ -112,69 +112,30 @@
     overflow: hidden;
   }
 
-  .stat-card { padding: 10px 12px; text-align: center; min-width: 0; }
-  .stat-card { position: relative; }
-  .stat-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 18%;
-    right: 18%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--blue), transparent);
-    opacity: 0.85;
-  }
-  .stat-card + .stat-card { border-left: 1px solid var(--line); }
-  .stat-card.kb { background: var(--panel); }
-  .stat-card.mouse { background: var(--panel-alt); }
-  .stat-card .val {
-    color: var(--blue-dark);
-    font-size: 1.05rem;
-    font-weight: 700;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
-  }
-  .stat-card .val .unit { font-size: 0.78rem; font-weight: 400; }
-  .stat-card.mouse .val { color: #107c10; }
-  .stat-card .lbl {
-    color: var(--muted);
-    font-size: 0.72rem;
-    line-height: 1.35;
-    margin-bottom: 2px;
-    overflow-wrap: anywhere;
-  }
-
-  .period-bar {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    margin: -4px 0 16px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-    overflow: hidden;
-  }
-  .period-card {
+  .stat-card {
     padding: 9px 12px;
     text-align: center;
     min-width: 0;
     background: var(--panel-alt);
   }
-  .period-card + .period-card { border-left: 1px solid var(--line); }
-  .period-card .lbl {
-    color: var(--muted);
-    font-size: 0.7rem;
-    line-height: 1.35;
-    margin-bottom: 2px;
-  }
-  .period-card .val {
+  .stat-card + .stat-card { border-left: 1px solid var(--line); }
+  .stat-card:nth-child(6n+1) { border-left: 0; }
+  .stat-card:nth-child(n+7) { border-top: 1px solid var(--line); }
+  .stat-card .val {
     color: var(--blue-dark);
     font-size: 0.96rem;
     font-weight: 700;
     line-height: 1.25;
     overflow-wrap: anywhere;
   }
-  .period-card .unit { font-size: 0.72rem; font-weight: 400; }
+  .stat-card .val .unit { font-size: 0.72rem; font-weight: 400; }
+  .stat-card .lbl {
+    color: var(--muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+    margin-bottom: 2px;
+    overflow-wrap: anywhere;
+  }
 
   .mode-toggle {
     display: inline-flex;
@@ -384,9 +345,8 @@
     body { padding: 12px; }
     h1 { font-size: 1.75rem; }
     .stats-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .period-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .stat-card:nth-child(odd) { border-left: 0; }
-    .period-card:nth-child(odd) { border-left: 0; }
+    .stat-card:nth-child(n+3) { border-top: 1px solid var(--line); }
     .split-wrap, .heatmap-grid { grid-template-columns: 1fr; gap: 14px; }
     .split-kb, .split-mouse, .mouse-col { width: auto; padding: 0; border-left: 0; }
     .split-divider { display: none; }
@@ -397,9 +357,7 @@
 
   @media (max-width: 520px) {
     .stats-bar { grid-template-columns: 1fr; }
-    .period-bar { grid-template-columns: 1fr; }
     .stat-card + .stat-card { border-left: 0; border-top: 1px solid var(--line); }
-    .period-card + .period-card { border-left: 0; border-top: 1px solid var(--line); }
     .section { padding: 12px; }
     .button { width: 100%; }
   }
@@ -422,16 +380,11 @@
   <div class="title-row">
     <h1>人生で一番押したキーボードのキー</h1>
     <p class="subtitle">あなたのキー入力とクリックを可視化</p>
-  </div>
-  <div class="actions">
-    <label id="fileInputLabel" class="button" for="fileInput">📂 記録ファイルを開く</label>
-    <input type="file" id="fileInput" accept=".json" hidden>
-    <button id="saveImgBtn" class="button secondary" onclick="saveAsImage()" hidden>📷 画像として保存</button>
+    <button id="saveImgBtn" class="button secondary" onclick="saveAsImage()" hidden>画像として保存</button>
   </div>
 </div>
 
 <div id="statsBar" class="stats-bar" hidden></div>
-<div id="periodBar" class="period-bar" hidden></div>
 
 <div id="main" hidden>
 
@@ -1018,28 +971,6 @@ function fmtDuration(sec){
   return `${s}<span class="unit">秒</span>`;
 }
 
-function renderPeriodStats(kbTotal, mTotal){
-  const activeSec = Number(statsMeta.active_seconds || 0);
-  const hours = activeHours();
-  const days = statsMeta.active_days && typeof statsMeta.active_days === 'object'
-    ? Object.values(statsMeta.active_days).filter(v=>Number(v)>0).length
-    : 0;
-  const kbPerHour = hours > 0 ? kbTotal / hours : 0;
-  const mousePerHour = hours > 0 ? mTotal / hours : 0;
-  const firstAt = statsMeta.first_recorded_at || statsMeta.first_started_at;
-  const lastAt = statsMeta.last_recorded_at || statsMeta.last_active_at;
-
-  const bar = document.getElementById('periodBar');
-  bar.hidden = false;
-  bar.innerHTML = `
-    <div class="period-card"><div class="lbl">集計開始</div><div class="val">${fmtDateTime(firstAt)}</div></div>
-    <div class="period-card"><div class="lbl">最終記録</div><div class="val">${fmtDateTime(lastAt)}</div></div>
-    <div class="period-card"><div class="lbl">記録稼働時間</div><div class="val">${fmtDuration(activeSec)}</div></div>
-    <div class="period-card"><div class="lbl">記録日数</div><div class="val">${days.toLocaleString()}<span class="unit">日</span></div></div>
-    <div class="period-card"><div class="lbl">押下ペース</div><div class="val">${kbPerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>
-    <div class="period-card"><div class="lbl">クリックペース</div><div class="val">${mousePerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>`;
-}
-
 // サマリー
 function renderStats(){
   const KB_OUTLIER = 10;  // キーボード: 10秒超は外れ値
@@ -1053,7 +984,15 @@ function renderStats(){
 
   const mTotal     = mouseData.reduce((s,d)=>s+d.count, 0);
   const mTotalSec  = mouseData.reduce((s,d)=>s+(d.max<=M_OUTLIER?d.total:0), 0);
-  const topM       = [...mouseData].sort((a,b)=>b.count-a.count)[0];
+  const activeSec = Number(statsMeta.active_seconds || 0);
+  const hours = activeHours();
+  const days = statsMeta.active_days && typeof statsMeta.active_days === 'object'
+    ? Object.values(statsMeta.active_days).filter(v=>Number(v)>0).length
+    : 0;
+  const kbPerHour = hours > 0 ? kbTotal / hours : 0;
+  const mousePerHour = hours > 0 ? mTotal / hours : 0;
+  const firstAt = statsMeta.first_recorded_at || statsMeta.first_started_at;
+  const lastAt = statsMeta.last_recorded_at || statsMeta.last_active_at;
 
   function fmtTime(sec){
     const s = Math.round(sec);
@@ -1066,13 +1005,18 @@ function renderStats(){
   const bar=document.getElementById('statsBar');
   bar.hidden=false;
   bar.innerHTML=`
-    <div class="stat-card kb"><div class="lbl">⌨️ 総押下回数</div><div class="val">${kbTotal.toLocaleString()}<span class="unit">回</span></div></div>
-    <div class="stat-card kb"><div class="lbl">⌨️ 総押下時間</div><div class="val">${fmtTime(kbTotalSec)}</div></div>
-    <div class="stat-card kb"><div class="lbl">⌨️ 平均押下時間</div><div class="val">${fmtMs(kbAvgMs)}</div></div>
-    <div class="stat-card kb"><div class="lbl">⌨️ 最多キー</div><div class="val">${topKb?topKb.label:'-'}</div></div>
-    <div class="stat-card mouse"><div class="lbl">🖱 総クリック回数</div><div class="val">${mTotal.toLocaleString()}<span class="unit">回</span></div></div>
-    <div class="stat-card mouse"><div class="lbl">🖱 総クリック時間</div><div class="val">${fmtTime(mTotalSec)}</div></div>`;
-  renderPeriodStats(kbTotal, mTotal);
+    <div class="stat-card"><div class="lbl">集計開始日時</div><div class="val">${fmtDateTime(firstAt)}</div></div>
+    <div class="stat-card"><div class="lbl">最終記録日時</div><div class="val">${fmtDateTime(lastAt)}</div></div>
+    <div class="stat-card"><div class="lbl">記録稼働時間</div><div class="val">${fmtDuration(activeSec)}</div></div>
+    <div class="stat-card"><div class="lbl">記録日数</div><div class="val">${days.toLocaleString()}<span class="unit">日</span></div></div>
+    <div class="stat-card"><div class="lbl">キー押下合計回数</div><div class="val">${kbTotal.toLocaleString()}<span class="unit">回</span></div></div>
+    <div class="stat-card"><div class="lbl">クリック合計回数</div><div class="val">${mTotal.toLocaleString()}<span class="unit">回</span></div></div>
+    <div class="stat-card"><div class="lbl">最多キー</div><div class="val">${topKb?topKb.label:'-'}</div></div>
+    <div class="stat-card"><div class="lbl">キー押下回数/時</div><div class="val">${kbPerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>
+    <div class="stat-card"><div class="lbl">クリック回数/時</div><div class="val">${mousePerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>
+    <div class="stat-card"><div class="lbl">キー押下合計時間</div><div class="val">${fmtTime(kbTotalSec)}</div></div>
+    <div class="stat-card"><div class="lbl">キー押下平均時間</div><div class="val">${fmtMs(kbAvgMs)}</div></div>
+    <div class="stat-card"><div class="lbl">クリック合計時間</div><div class="val">${fmtTime(mTotalSec)}</div></div>`;
 }
 
 function renderAll(raw){
@@ -1087,17 +1031,6 @@ function renderAll(raw){
   renderMouseTimeHeatmap();
   makeBarTimePair(parseInt(document.getElementById('topNKbTime').value));
 }
-
-document.getElementById('fileInput').addEventListener('change',e=>{
-  const file=e.target.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      renderAll(JSON.parse(ev.target.result));
-    }catch(err){alert('JSONの読み込みに失敗しました: '+err.message);}
-  };
-  reader.readAsText(file,'utf-8');
-});
 
 window.addEventListener('DOMContentLoaded', async()=>{
   if(window.KEYCOUNTER_EMBEDDED_STATS){
@@ -1129,15 +1062,13 @@ document.querySelectorAll('[data-count-mode]').forEach(btn=>{
 
 async function saveAsImage(){
   const btn = document.getElementById('saveImgBtn');
-  const fileLabel = document.getElementById('fileInputLabel');
   const saveBtn = document.getElementById('saveImgBtn');
   const capture = document.getElementById('capture');
   const OUT_W = 1080;
-  btn.textContent = '⏳ 生成中...';
+  btn.textContent = '生成中...';
   btn.disabled = true;
   try {
     // ボタンのみ一時非表示（タイトル・サブタイトルは表示したまま）
-    if(fileLabel) fileLabel.hidden = true;
     if(saveBtn) saveBtn.hidden = true;
 
     // bodyのpaddingを一時的に0にしてからcaptureの高さを取得
@@ -1190,9 +1121,8 @@ async function saveAsImage(){
   } finally {
     document.body.style.padding = '';
     document.body.classList.remove('is-exporting');
-    if(fileLabel) fileLabel.hidden = false;
     if(saveBtn) saveBtn.hidden = false;
-    btn.textContent = '📷 画像として保存';
+    btn.textContent = '画像として保存';
     btn.disabled = false;
   }
 }
