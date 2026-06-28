@@ -2,6 +2,25 @@
 
 キーボードとマウスの押下回数・押下時間を可視化する Windows 常駐アプリです。
 
+## ダウンロード
+
+一般ユーザー向けの説明・最新版ダウンロードはこちらです。
+
+https://bunjicompany.com/downloads/KeyCounter/
+
+過去バージョン・更新履歴はこちらです。
+
+https://github.com/bunjicompany/keycounter/releases
+
+## 安心して使うために
+
+KeyCounterはキーロガーではありません。
+入力した文章・パスワード・クリップボードの内容を保存しません。
+保存するのは、キーやマウスボタンごとの押下回数・押下時間のみです。
+外部サーバーへの送信は行いません。
+
+個人開発アプリのため、Windows SmartScreenの警告が表示される場合があります。
+
 ![KeyCounter screenshot](assets/screenshot.png)
 
 ## 特徴
@@ -13,12 +32,6 @@
 - 集計開始、最終記録、記録稼働時間、1時間あたりの操作ペースを表示
 - 統計画面を画像として保存
 - タスクトレイに常駐し、一時停止、手動保存、リセット、起動時実行を操作可能
-
-## ダウンロード
-
-最新版は以下のページからダウンロードできます。
-
-https://bunjicompany.com/downloads/KeyCounter/
 
 ## 保存するデータ
 
