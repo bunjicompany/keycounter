@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人生で一番押したキーボードのキー</title>
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --panel: #ffffff;
+    --panel-alt: #f8fbff;
+    --line: #d5deea;
+    --line-strong: #9fb1c8;
+    --text: #1f2937;
+    --muted: #64748b;
+    --blue: #0078d4;
+    --blue-strong: #005a9e;
+    --blue-dark: #004578;
+    --gold: #f7b500;
+    --orange: #f7630c;
+    --violet: #8764b8;
+    --teal: #038387;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  body {
+    font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+    background: linear-gradient(180deg, #eef4fb 0%, var(--bg) 240px, #f8fafc 100%);
+    color: var(--text);
+    padding: 20px;
+  }
+
+  #capture {
+    width: min(100%, 1080px);
+    margin: 0 auto;
+  }
+
+  .hero {
+    text-align: center;
+    padding-top: 0;
+    margin-bottom: 16px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    color: var(--blue-dark);
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+    text-shadow: none;
+  }
+
+  .subtitle {
+    color: #334155;
+    font-size: 1.35rem;
+    line-height: 1.5;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.2s, transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 90, 158, 0.22);
+  }
+
+  .button:hover { filter: brightness(1.08); }
+  .button:active { transform: translateY(1px); }
+  .button.secondary { background: #107c10; color: #fff; font-weight: 800; box-shadow: 0 2px 5px rgba(16, 124, 16, 0.22); }
+  .button:disabled { cursor: wait; opacity: 0.72; }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-bottom: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .stat-card { padding: 10px 12px; text-align: center; min-width: 0; }
+  .stat-card { position: relative; }
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18%;
+    right: 18%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    opacity: 0.85;
+  }
+  .stat-card + .stat-card { border-left: 1px solid var(--line); }
+  .stat-card.kb { background: var(--panel); }
+  .stat-card.mouse { background: var(--panel-alt); }
+  .stat-card .val {
+    color: var(--blue-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .stat-card .val .unit { font-size: 0.78rem; font-weight: 400; }
+  .stat-card.mouse .val { color: #107c10; }
+  .stat-card .lbl {
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    margin-bottom: 2px;
+    overflow-wrap: anywhere;
+  }
+
+  .period-bar {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin: -4px 0 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+  }
+  .period-card {
+    padding: 9px 12px;
+    text-align: center;
+    min-width: 0;
+    background: var(--panel-alt);
+  }
+  .period-card + .period-card { border-left: 1px solid var(--line); }
+  .period-card .lbl {
+    color: var(--muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+    margin-bottom: 2px;
+  }
+  .period-card .val {
+    color: var(--blue-dark);
+    font-size: 0.96rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .period-card .unit { font-size: 0.72rem; font-weight: 400; }
+
+  .mode-toggle {
+    display: inline-flex;
+    margin-left: 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .mode-btn {
+    min-width: 72px;
+    min-height: 26px;
+    padding: 3px 9px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mode-btn + .mode-btn { border-left: 1px solid var(--line-strong); }
+  .mode-btn.active { background: var(--blue); color: #fff; }
+
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  }
+  .section:last-of-type { margin-bottom: 0; }
+  .section.heatmap { padding: 18px; }
+  .section > h2 {
+    color: var(--blue-dark);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    padding-left: 10px;
+    border-left: 4px solid var(--blue);
+  }
+
+  .split-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px 200px;
+    align-items: start;
+    gap: 0;
+  }
+  .split-kb { min-width: 0; padding-right: 16px; }
+  .split-divider { background: var(--line); align-self: stretch; }
+  .split-mouse { min-width: 0; width: 200px; padding-left: 16px; }
+
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: 18px;
+    align-items: start;
+  }
+  .kb-col { min-width: 0; overflow-x: auto; padding-bottom: 4px; }
+  .mouse-col {
+    display: flex;
+    justify-content: center;
+    border-left: 1px solid var(--line);
+    padding-left: 18px;
+  }
+
+  .pair-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .control-chip {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-left: auto;
+  }
+  input[type=range] {
+    width: 120px;
+    accent-color: var(--blue-strong);
+  }
+  .range-val { color: var(--blue); font-size: 0.8rem; min-width: 24px; text-align: right; }
+
+  .chart-wrap { position: relative; height: 240px; overflow: hidden; }
+  .chart-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+  canvas { max-height: 300px; }
+
+  #keyboard,
+  #keyboard-time {
+    user-select: none;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .kb-row {
+    display: flex;
+    gap: 4px;
+    width: max-content;
+    min-width: 100%;
+    height: 40px;
+    margin-bottom: 4px;
+    justify-content: center;
+  }
+  .kb-row.row-caps {
+    transform: translateX(-29px);
+  }
+  .kb-row.row-function .kb-key {
+    min-width: 35px;
+    width: 35px;
+  }
+  .kb-key {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 5px; font-size: 0.6rem; font-weight: 600;
+    line-height: 1.15;
+    white-space: pre-line;
+    text-align: center;
+    height: 40px; min-width: 40px; padding: 0 5px;
+    background: #334155; color: #fff;
+    border: 1px solid var(--line-strong); transition: background 0.3s;
+    position: relative; cursor: default; flex-shrink: 0;
+  }
+  .kb-key .kb-count {
+    position: absolute; bottom: 2px; right: 4px;
+    font-size: 0.52rem; color: rgba(255,255,255,0.58);
+  }
+  .kb-key.wide-1-5 { min-width: 62px; }
+  .kb-key.wide-2   { min-width: 84px; }
+  .kb-key.wide-2-5 { min-width: 106px; }
+  .kb-key.wide-3   { min-width: 128px; }
+  .kb-key.wide-7   { min-width: 208px; }
+  .kb-key.wide-5   { min-width: 108px; }
+  .kb-key.tab-narrow { min-width: 57px; }
+  .kb-key.caps-narrow { min-width: 79px; }
+  .kb-key.ctrl-bottom { min-width: 57px; }
+  .kb-key.shift-right-wide { min-width: 72px; }
+  .kb-key.enter-tall {
+    min-width: 74px;
+    width: 74px;
+    height: 84px;
+    z-index: 2;
+    background: transparent !important;
+    border: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .enter-svg { display: block; width: 74px; height: 84px; overflow: visible; }
+  .kb-key.jp-ime   { min-width: 50px; font-size: 0.52rem; }
+  .kb-key.jp-menu  { min-width: 40px; }
+  .arrow-pad {
+    position: relative;
+    width: 92px;
+    height: 40px;
+    align-self: center;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+  .kb-key.arrow-half {
+    position: absolute;
+    min-width: 28px;
+    width: 28px;
+    height: 18px;
+    padding: 0;
+    border-radius: 4px;
+    font-size: 0.52rem;
+  }
+  .kb-key.arrow-up { left: 32px; top: 0; }
+  .kb-key.arrow-down { left: 32px; bottom: 0; }
+  .kb-key.arrow-left { left: 0; top: 11px; }
+  .kb-key.arrow-right { right: 0; top: 11px; }
+  .kb-key.arrow-half .kb-count { display: none; }
+  .kb-key.untracked {
+    background: #e5e7eb !important;
+    color: #64748b;
+    border-color: #cbd5e1;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.72);
+  }
+  .kb-key.untracked::after {
+    content: "対象外";
+    position: absolute;
+    right: 4px;
+    bottom: 2px;
+    font-size: 0.48rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  #mouse-heatmap, #mouse-heatmap-time { display:flex; justify-content:center; align-items:flex-start; gap:32px; flex-wrap:wrap; }
+  .mouse-svg-wrapper { display: flex; flex-direction: column; align-items: center; }
+  .mouse-svg { filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.16)); }
+  .svg-hotspot { cursor: default; transition: fill 0.3s; }
+
+  #tooltip {
+    position: fixed; background: var(--panel); border: 1px solid var(--line-strong);
+    border-radius: 4px; padding: 10px 14px; font-size: 0.8rem;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+    z-index: 999; max-width: 200px;
+  }
+  #tooltip .tt-key { font-weight: bold; color: var(--blue); margin-bottom: 4px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 16px; color: var(--text); }
+
+  @media (max-width: 900px) {
+    body { padding: 12px; }
+    h1 { font-size: 1.75rem; }
+    .stats-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .period-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat-card:nth-child(odd) { border-left: 0; }
+    .period-card:nth-child(odd) { border-left: 0; }
+    .split-wrap, .heatmap-grid { grid-template-columns: 1fr; gap: 14px; }
+    .split-kb, .split-mouse, .mouse-col { width: auto; padding: 0; border-left: 0; }
+    .split-divider { display: none; }
+    .chart-wrap { height: 215px; }
+    .pair-label { flex-wrap: wrap; }
+    .control-chip { margin-left: 0; }
+  }
+
+  @media (max-width: 520px) {
+    .stats-bar { grid-template-columns: 1fr; }
+    .period-bar { grid-template-columns: 1fr; }
+    .stat-card + .stat-card { border-left: 0; border-top: 1px solid var(--line); }
+    .period-card + .period-card { border-left: 0; border-top: 1px solid var(--line); }
+    .section { padding: 12px; }
+    .button { width: 100%; }
+  }
+
+  body.is-exporting .section.heatmap { padding-top: 16px; padding-bottom: 16px; }
+  body.is-exporting .hero { padding-top: 27px; }
+  body.is-exporting .heatmap-grid { align-items: center; }
+  body.is-exporting .kb-row { gap: 4px; margin-bottom: 4px; }
+  body.is-exporting .kb-key { height: 40px; }
+  body.is-exporting .kb-key.enter-tall { height: 84px; }
+  body.is-exporting .kb-key.arrow-half { height: 18px; }
+  body.is-exporting .mouse-svg { width: 165px; height: auto; }
+</style>
+</head>
+<body>
+
+<div id="capture">
+
+<div class="hero">
+  <div class="title-row">
+    <h1>人生で一番押したキーボードのキー</h1>
+    <p class="subtitle">あなたのキー入力とクリックを可視化</p>
+  </div>
+  <div class="actions">
+    <label id="fileInputLabel" class="button" for="fileInput">📂 記録ファイルを開く</label>
+    <input type="file" id="fileInput" accept=".json" hidden>
+    <button id="saveImgBtn" class="button secondary" onclick="saveAsImage()" hidden>📷 画像として保存</button>
+  </div>
+</div>
+
+<div id="statsBar" class="stats-bar" hidden></div>
+<div id="periodBar" class="period-bar" hidden></div>
+
+<div id="main" hidden>
+
+  <!-- ── 押下回数 ── -->
+  <!-- ── 押下回数グラフ ── -->
+  <div class="section">
+    <h2>押下回数 - 棒グラフ</h2>
+    <div class="split-wrap">
+      <div class="split-kb">
+        <div class="pair-label">⌨️ キーボード
+          <span class="mode-toggle" aria-label="押下回数グラフの表示単位">
+            <button type="button" class="mode-btn active" data-count-mode="total">累計</button>
+            <button type="button" class="mode-btn" data-count-mode="hourly">1時間あたり</button>
+          </span>
+          <span class="control-chip">件数</span>
+          <input type="range" id="topNKb" min="5" max="50" value="20">
+          <span class="range-val" id="topNKbVal">20</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartKbCount"></canvas></div>
+      </div>
+      <div class="split-divider"></div>
+      <div class="split-mouse">
+        <div class="pair-label">🖱 マウス</div>
+        <div class="chart-wrap"><canvas id="chartMouseCount"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 押下回数ヒートマップ ── -->
+  <div class="section heatmap">
+    <h2>押下回数 - ヒートマップ</h2>
+      <div class="heatmap-grid">
+        <div class="kb-col">
+          <div id="keyboard"></div>
+        </div>
+      <div class="mouse-col">
+        <div id="mouse-heatmap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 押下時間グラフ ── -->
+  <div class="section">
+    <h2>押下時間 - 棒グラフ</h2>
+    <div class="split-wrap">
+      <div class="split-kb">
+        <div class="pair-label">⌨️ キーボード
+          <span class="control-chip">件数</span>
+          <input type="range" id="topNKbTime" min="5" max="50" value="20">
+          <span class="range-val" id="topNKbTimeVal">20</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartKbTime"></canvas></div>
+      </div>
+      <div class="split-divider"></div>
+      <div class="split-mouse">
+        <div class="pair-label">🖱 マウス</div>
+        <div class="chart-wrap"><canvas id="chartMouseTime"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 押下時間ヒートマップ ── -->
+  <div class="section heatmap">
+    <h2>押下時間 - ヒートマップ</h2>
+      <div class="heatmap-grid">
+        <div class="kb-col">
+          <div id="keyboard-time"></div>
+        </div>
+      <div class="mouse-col">
+        <div id="mouse-heatmap-time"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+</div><!-- /capture -->
+
+<div id="tooltip">
+  <div class="tt-key" id="tt-key"></div>
+  <div class="tt-row"><span>回数</span><span id="tt-count"></span></div>
+  <div class="tt-row"><span>平均</span><span id="tt-avg"></span></div>
+  <div class="tt-row"><span>最大</span><span id="tt-max"></span></div>
+</div>
+
+<script>
+const VK = {
+  8:'BS',9:'Tab',13:'Enter',20:'Caps',21:'カタカナ',27:'Esc',28:'変換',29:'無変換',32:'Space',
+  33:'PgUp',34:'PgDn',35:'End',36:'Home',
+  37:'←',38:'↑',39:'→',40:'↓',45:'Ins',46:'Del',
+  48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',
+  65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',74:'J',
+  75:'K',76:'L',77:'M',78:'N',79:'O',80:'P',81:'Q',82:'R',83:'S',84:'T',
+  85:'U',86:'V',87:'W',88:'X',89:'Y',90:'Z',
+  96:'N0',97:'N1',98:'N2',99:'N3',100:'N4',101:'N5',102:'N6',103:'N7',104:'N8',105:'N9',
+  106:'N*',107:'N+',109:'N-',110:'N.',111:'N/',
+  112:'F1',113:'F2',114:'F3',115:'F4',116:'F5',117:'F6',
+  118:'F7',119:'F8',120:'F9',121:'F10',122:'F11',123:'F12',
+  144:'NumLk',145:'ScrLk',
+  186:'*',187:'+',188:',',189:'-',190:'.',191:'/',
+  192:'@',219:'[',220:'¥',221:']',222:'^',226:'ろ',242:'カタカナ',243:'半角/全角',244:'カタカナ'
+};
+const SPECIAL = {
+  'shift':'Shift','shift_l':'Shift(L)','shift_r':'Shift(R)',
+  'ctrl_l':'Ctrl(L)','ctrl_r':'Ctrl(R)',
+  'alt_l':'Alt(L)','alt_r':'Alt(R)','alt_gr':'Alt(R)',
+  'cmd':'Win','enter':'Enter','backspace':'BS','tab':'Tab',
+  'caps_lock':'Caps','esc':'Esc','escape':'Esc',
+  'space':'Space','delete':'Del','insert':'Ins',
+  'home':'Home','end':'End','page_up':'PgUp','page_down':'PgDn','menu':'Menu','fn':'Fn',
+  'left':'←','right':'→','up':'↑','down':'↓',
+  'f1':'F1','f2':'F2','f3':'F3','f4':'F4','f5':'F5','f6':'F6',
+  'f7':'F7','f8':'F8','f9':'F9','f10':'F10','f11':'F11','f12':'F12',
+  'num_lock':'NumLk','scroll_lock':'ScrLk','print_screen':'PrtSc','pause':'Pause',
+};
+const MOUSE_BTN = [
+  { id:'mouse_left',   label:'左クリック' },
+  { id:'mouse_right',  label:'右クリック' },
+  { id:'mouse_middle', label:'ホイールクリック' },
+  { id:'mouse_x1',     label:'戻るボタン' },
+  { id:'mouse_x2',     label:'進むボタン' },
+];
+function keyLabel(id) {
+  if (id.startsWith('vk_'))   { const vk=parseInt(id.slice(3)); return VK[vk]||`vk${vk}`; }
+  if (id.startsWith('ord_'))  return `#${id.slice(4)}`;
+  if (id.startsWith('mouse_')){ const b=MOUSE_BTN.find(x=>x.id===id); return b?b.label:id; }
+  return SPECIAL[id.toLowerCase()]||id;
+}
+
+const KB_LAYOUT = [
+  [['Esc','esc'],['F1','f1'],['F2','f2'],['F3','f3'],['F4','f4'],['F5','f5'],['F6','f6'],['F7','f7'],['F8','f8'],['F9','f9'],['F10','f10'],['F11\nNumLk','f11'],['F12\nScrLk','f12'],['PrtSc\nScrRq','print_screen'],['Pause\nBreak','pause'],['Ins','insert'],['Del','delete']],
+  [['半角\n全角\n漢字','vk_243'],['!\n1\nぬ','vk_49'],['"\n2\nふ','vk_50'],['#\n3\nあ','vk_51'],['$\n4\nう','vk_52'],['%\n5\nえ','vk_53'],['&\n6\nお','vk_54'],["'\n7\nや",'vk_55'],['(\n8\nゆ','vk_56'],[')\n9\nよ','vk_57'],['を\n0\nわ','vk_48'],['=\n-\nほ','vk_189'],['~\n^\nへ','vk_222'],['|\n¥\nー','vk_220'],['Back\nSpace','backspace']],
+  [['Tab\n↤\n↦','tab','wide-1-5 tab-narrow'],['Q\nた','vk_81'],['W\nて','vk_87'],['E\nい','vk_69'],['R\nす','vk_82'],['T\nか','vk_84'],['Y\nん','vk_89'],['U\nな','vk_85'],['I\nに','vk_73'],['O\nら','vk_79'],['P\nせ','vk_80'],['`\n@\n゛','vk_192'],['{\n[\n「','vk_219'],['Enter\n↵','enter','wide-2 enter-tall']],
+  [['Caps Lock\n英数','caps_lock','wide-2 caps-narrow'],['A\nち','vk_65'],['S\nと','vk_83'],['D\nし','vk_68'],['F\nは','vk_70'],['G\nき','vk_71'],['H\nく','vk_72'],['J\nま','vk_74'],['K\nの','vk_75'],['L\nり','vk_76'],['+\n;\nれ','vk_187'],['*\n:\nけ','vk_186'],['}\n]\nむ','vk_221']],
+  [['⇧ Shift','shift_l','wide-2-5'],['Z\nつ','vk_90'],['X\nさ','vk_88'],['C\nそ','vk_67'],['V\nひ','vk_86'],['B\nこ','vk_66'],['N\nみ','vk_78'],['M\nも','vk_77'],['<\n,\nね','vk_188'],['>\n.\nる','vk_190'],['?\n/\nめ','vk_191'],['_\n\\\nろ','vk_226'],['⇧ Shift','shift_r','wide-1-5 shift-right-wide']],
+  [['Ctrl','ctrl_l','ctrl-bottom'],['Fn','fn'],['Win','cmd'],['Alt','alt_l'],['無変換','vk_29','jp-ime'],['Space','space','wide-5'],['変換','vk_28','jp-ime'],['カタカナ\nひらがな\nローマ字','vk_244','jp-ime'],['Alt','alt_r','jp-menu'],['Ctrl','ctrl_r','ctrl-bottom'],{type:'arrows', keys:[['↑','up','arrow-up'],['←','left','arrow-left'],['→','right','arrow-right'],['↓','down','arrow-down']]}],
+];
+
+let kbData=[], mouseData=[], statsMeta={};
+let countMode='total';
+const charts={};
+const THEME = {
+  empty: '#334155',
+  grid: '#dbe4ef',
+  tick: '#475569',
+  keyText: '#ffffff',
+  mouseBody: '#ffffff',
+  mouseStroke: '#64748b',
+  mouseDivider: '#d5deea',
+  sideButtonStroke: '#9fb1c8',
+  heatStart: [0, 120, 212],
+  heatMid: [135, 100, 184],
+  heatEnd: [247, 99, 12],
+};
+const UNTRACKED_KEYS = new Set(['fn']);
+const HIDDEN_STAT_KEYS = new Set(['vk_255', 'unknown']);
+
+function normalizeRawStats(raw) {
+  const data = typeof structuredClone === 'function' ? structuredClone(raw) : JSON.parse(JSON.stringify(raw));
+  if(data.alt_gr){
+    if(!data.alt_r) data.alt_r = {count:0,total_duration:0,max_duration:0};
+    data.alt_r.count = (data.alt_r.count || 0) + (data.alt_gr.count || 0);
+    data.alt_r.total_duration = (data.alt_r.total_duration || 0) + (data.alt_gr.total_duration || 0);
+    data.alt_r.max_duration = Math.max(data.alt_r.max_duration || 0, data.alt_gr.max_duration || 0);
+    delete data.alt_gr;
+  }
+  ['vk_21','vk_242','kana','hiragana','katakana'].forEach(oldKey=>{
+    if(data[oldKey]){
+      if(!data.vk_244) data.vk_244 = {count:0,total_duration:0,max_duration:0};
+      data.vk_244.count = (data.vk_244.count || 0) + (data[oldKey].count || 0);
+      data.vk_244.total_duration = (data.vk_244.total_duration || 0) + (data[oldKey].total_duration || 0);
+      data.vk_244.max_duration = Math.max(data.vk_244.max_duration || 0, data[oldKey].max_duration || 0);
+      delete data[oldKey];
+    }
+  });
+  if(data.escape){
+    if(!data.esc) data.esc = {count:0,total_duration:0,max_duration:0};
+    data.esc.count = (data.esc.count || 0) + (data.escape.count || 0);
+    data.esc.total_duration = (data.esc.total_duration || 0) + (data.escape.total_duration || 0);
+    data.esc.max_duration = Math.max(data.esc.max_duration || 0, data.escape.max_duration || 0);
+    delete data.escape;
+  }
+  if(data.shift){
+    if(!data.shift_l) data.shift_l = {count:0,total_duration:0,max_duration:0};
+    data.shift_l.count = (data.shift_l.count || 0) + (data.shift.count || 0);
+    data.shift_l.total_duration = (data.shift_l.total_duration || 0) + (data.shift.total_duration || 0);
+    data.shift_l.max_duration = Math.max(data.shift_l.max_duration || 0, data.shift.max_duration || 0);
+    delete data.shift;
+  }
+  ['vk_20','vk_240','caps','capital'].forEach(oldKey=>{
+    if(data[oldKey]){
+      if(!data.caps_lock) data.caps_lock = {count:0,total_duration:0,max_duration:0};
+      data.caps_lock.count = (data.caps_lock.count || 0) + (data[oldKey].count || 0);
+      data.caps_lock.total_duration = (data.caps_lock.total_duration || 0) + (data[oldKey].total_duration || 0);
+      data.caps_lock.max_duration = Math.max(data.caps_lock.max_duration || 0, data[oldKey].max_duration || 0);
+      delete data[oldKey];
+    }
+  });
+  return data;
+}
+
+function processData(raw) {
+  raw = normalizeRawStats(raw);
+  statsMeta = (raw && typeof raw._meta === 'object') ? raw._meta : {};
+  kbData=[]; mouseData=[];
+  Object.entries(raw).forEach(([id,v])=>{
+    if(id.startsWith('_') || HIDDEN_STAT_KEYS.has(id)) return;
+    const count=v.count||0, total=v.total_duration||0, max=v.max_duration||0;
+    const avg=count>0?total/count:0;
+    const e={id,label:keyLabel(id),count,total,avg,max};
+    if(id.startsWith('mouse_')) mouseData.push(e); else kbData.push(e);
+  });
+}
+
+function mixRgb(a,b,t){
+  return a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+}
+
+function heatColor(ratio) {
+  const t = Math.max(0, Math.min(1, ratio));
+  const rgb = t < 0.55
+    ? mixRgb(THEME.heatStart, THEME.heatMid, t/0.55)
+    : mixRgb(THEME.heatMid, THEME.heatEnd, (t-0.55)/0.45);
+  return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.92)`;
+}
+function valueColors(values){
+  const max = Math.max(...values, 1);
+  return values.map(v=>heatColor(v/max));
+}
+
+function chartScales(xTick, yOptions={}){
+  const {ticks={}, ...restY} = yOptions;
+  return {
+    x:{ticks:{color:THEME.tick,...xTick},grid:{color:THEME.grid}},
+    y:{ticks:{color:THEME.tick,...ticks},grid:{color:THEME.grid},...restY},
+  };
+}
+
+// tooltip
+const tooltip=document.getElementById('tooltip');
+function showTip(lbl,d,e){
+  document.getElementById('tt-key').textContent=lbl;
+  document.getElementById('tt-count').textContent=d?d.count.toLocaleString():'0';
+  document.getElementById('tt-avg').textContent=d?(d.avg*1000).toFixed(1)+'ms':'-';
+  document.getElementById('tt-max').textContent=d?(d.max*1000).toFixed(1)+'ms':'-';
+  tooltip.style.opacity=1;
+}
+function moveTip(e){
+  const gap = 12;
+  const rect = tooltip.getBoundingClientRect();
+  let left = e.clientX + gap;
+  let top = e.clientY + gap;
+  if(left + rect.width > window.innerWidth - gap){
+    left = e.clientX - rect.width - gap;
+  }
+  if(top + rect.height > window.innerHeight - gap){
+    top = window.innerHeight - rect.height - gap;
+  }
+  tooltip.style.left = Math.max(gap, left) + 'px';
+  tooltip.style.top = Math.max(gap, top) + 'px';
+}
+function hideTip(){tooltip.style.opacity=0;}
+
+// マウスの全ボタンラベル（データがなくても固定で並べる）
+const MOUSE_ALL_LABELS = ['左','右','ホイール','戻る','進む'];
+const MOUSE_ALL_IDS    = ['mouse_left','mouse_right','mouse_middle','mouse_x1','mouse_x2'];
+
+// 件数に応じてX軸ラベルの角度・サイズを返す
+function xTickStyle(n){
+  if(n<=5)  return {maxRotation:45, minRotation:45, font:{size:10}};
+  if(n<=10) return {maxRotation:0,  minRotation:0,  font:{size:11}};
+  if(n<=20) return {maxRotation:45, minRotation:45, font:{size:10}};
+  if(n<=35) return {maxRotation:90, minRotation:90, font:{size:10}};
+  return             {maxRotation:90, minRotation:90, font:{size:9}};
+}
+
+function activeHours(){
+  return Math.max(0, Number(statsMeta.active_seconds || 0) / 3600);
+}
+
+function countMetric(d){
+  const hours = activeHours();
+  if(countMode === 'hourly'){
+    return hours > 0 ? d.count / hours : 0;
+  }
+  return d.count;
+}
+
+function countValueLabel(value){
+  if(countMode === 'hourly'){
+    return value >= 100 ? value.toFixed(0) : value.toFixed(1);
+  }
+  return Math.round(value).toLocaleString();
+}
+
+// 回数グラフ（左:キーボード 右:マウス 別canvas・共通Y軸スケール）
+function makeBarCountPair(kbTopN){
+  const kbSorted=[...kbData].sort((a,b)=>countMetric(b)-countMetric(a)).slice(0,kbTopN);
+  const dm={}; mouseData.forEach(d=>{dm[d.id]=d;});
+  const mCounts=MOUSE_ALL_IDS.map(id=>countMetric(dm[id]||{count:0}));
+  const kbValues=kbSorted.map(d=>countMetric(d));
+  const yMax=Math.max(...kbValues,1);
+  const mYMax=Math.max(...mCounts,1);
+  const yTick = countMode === 'hourly'
+    ? {callback:v=>Number(v).toLocaleString() + '/時'}
+    : {};
+  const datasetLabel = countMode === 'hourly' ? '押下回数/時' : '押下回数';
+
+  const ctxKb=document.getElementById('chartKbCount').getContext('2d');
+  if(charts['chartKbCount'])charts['chartKbCount'].destroy();
+  const kbTick=xTickStyle(kbSorted.length);
+  charts['chartKbCount']=new Chart(ctxKb,{type:'bar',
+    data:{labels:kbSorted.map(d=>d.label),datasets:[{label:datasetLabel,data:kbValues.map(v=>+v.toFixed(1)),backgroundColor:valueColors(kbValues),borderRadius:4,categoryPercentage:1.0,barPercentage:0.8}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:0}},
+      plugins:{legend:{display:false}},
+      scales:chartScales(kbTick,{max:yMax,ticks:yTick})}
+  });
+
+  const ctxM=document.getElementById('chartMouseCount').getContext('2d');
+  if(charts['chartMouseCount'])charts['chartMouseCount'].destroy();
+  charts['chartMouseCount']=new Chart(ctxM,{type:'bar',
+    data:{labels:MOUSE_ALL_LABELS,datasets:[{label:datasetLabel,data:mCounts.map(v=>+v.toFixed(1)),backgroundColor:valueColors(mCounts),borderRadius:4,categoryPercentage:1.0,barPercentage:0.8}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:0}},
+      plugins:{legend:{display:false}},
+      scales:chartScales(xTickStyle(5),{max:mYMax,ticks:yTick})}
+  });
+}
+
+// 時間グラフ（左:キーボード 右:マウス 別canvas・独立Y軸スケール）
+function makeBarTimePair(kbTopN){
+  const kbFiltered=kbData.filter(d=>d.max<=60);
+  const kbSorted=[...kbFiltered].sort((a,b)=>b.avg-a.avg).slice(0,kbTopN);
+  const dm={}; mouseData.forEach(d=>{dm[d.id]=d;});
+  const mAvg=MOUSE_ALL_IDS.map(id=>+((dm[id]||{avg:0}).avg*1000).toFixed(1));
+  const kbYMax=Math.ceil(Math.max(...kbSorted.map(d=>d.avg*1000),1));
+  const mYMax =Math.ceil(Math.max(...mAvg,1));
+
+  const ctxKb=document.getElementById('chartKbTime').getContext('2d');
+  if(charts['chartKbTime'])charts['chartKbTime'].destroy();
+  const kbTimeTick=xTickStyle(kbSorted.length);
+  charts['chartKbTime']=new Chart(ctxKb,{type:'bar',
+    data:{labels:kbSorted.map(d=>d.label),datasets:[
+      {label:'平均(ms)',data:kbSorted.map(d=>+(d.avg*1000).toFixed(1)),backgroundColor:valueColors(kbSorted.map(d=>d.avg)),borderRadius:4,categoryPercentage:1.0,barPercentage:0.8},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:0}},
+      plugins:{legend:{display:false}},
+      scales:chartScales(kbTimeTick,{max:kbYMax,ticks:{callback:v=>Number.isInteger(v)?v+'ms':''}})}
+  });
+
+  const ctxM=document.getElementById('chartMouseTime').getContext('2d');
+  if(charts['chartMouseTime'])charts['chartMouseTime'].destroy();
+  charts['chartMouseTime']=new Chart(ctxM,{type:'bar',
+    data:{labels:MOUSE_ALL_LABELS,datasets:[
+      {label:'平均(ms)',data:mAvg,backgroundColor:valueColors(mAvg),borderRadius:4,categoryPercentage:1.0,barPercentage:0.8},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:0}},
+      plugins:{legend:{display:false}},
+      scales:chartScales(xTickStyle(5),{max:mYMax,ticks:{callback:v=>Number.isInteger(v)?v+'ms':''}})}
+  });
+}
+
+// キーボードヒートマップ
+function createKbKey(lbl, id, wClass, dm, colorFor, valueFor) {
+  const key = document.createElement('div');
+  key.className = 'kb-key' + (wClass ? ' ' + wClass : '');
+  const isUntracked = UNTRACKED_KEYS.has(id);
+  if (isUntracked) {
+    key.classList.add('untracked');
+    key.title = 'FnキーはWindowsにキー入力イベントが届かないため、計測対象外です。';
+  }
+  const d = dm[id];
+  const isEnterShape = wClass && wClass.includes('enter-tall');
+  const fill = d ? colorFor(d) : THEME.empty;
+  if (isEnterShape) {
+    const value = d ? valueFor(d) : '';
+    key.innerHTML = `
+      <svg class="enter-svg" viewBox="0 0 74 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M0 0H74V84H25V38H0Z" fill="${fill}" stroke="${THEME.lineStrong || '#9fb1c8'}" stroke-width="1"/>
+        <text x="51" y="36" text-anchor="middle" font-size="8" fill="white" font-weight="700">Enter</text>
+        <text x="51" y="48" text-anchor="middle" font-size="8" fill="white" font-weight="700">↵</text>
+        <text x="64" y="76" text-anchor="end" font-size="6.5" fill="rgba(255,255,255,0.72)">${value}</text>
+      </svg>`;
+  } else {
+    key.textContent = lbl;
+  }
+  if (d) {
+    if (!isEnterShape) key.style.background = fill;
+    key.style.color = THEME.keyText;
+    if (!isEnterShape) {
+      const sp = document.createElement('span');
+      sp.className = 'kb-count';
+      sp.textContent = valueFor(d);
+      key.appendChild(sp);
+    }
+    key.addEventListener('mouseenter', e => showTip(lbl, d, e));
+    key.addEventListener('mousemove', moveTip);
+    key.addEventListener('mouseleave', hideTip);
+  }
+  return key;
+}
+
+function appendKbEntry(rowDiv, entry, dm, colorFor, valueFor) {
+  if (!Array.isArray(entry) && entry.type === 'arrows') {
+    const pad = document.createElement('div');
+    pad.className = 'arrow-pad';
+    entry.keys.forEach(([lbl, id, posClass]) => {
+      pad.appendChild(createKbKey(lbl, id, `arrow-half ${posClass}`, dm, colorFor, valueFor));
+    });
+    rowDiv.appendChild(pad);
+    return;
+  }
+
+  const [lbl, id, wClass] = entry;
+  rowDiv.appendChild(createKbKey(lbl, id, wClass, dm, colorFor, valueFor));
+}
+
+function renderKbHeatmap(){
+  const max=Math.max(...kbData.map(d=>d.count),1);
+  const dm={}; kbData.forEach(d=>{dm[d.id]=d;});
+  const kb=document.getElementById('keyboard');
+  kb.innerHTML='';
+  KB_LAYOUT.forEach((row,rowIndex)=>{
+    const rowDiv=document.createElement('div');
+    rowDiv.className='kb-row' + (rowIndex === 0 ? ' row-function' : '') + (rowIndex === 3 ? ' row-caps' : '');
+    row.forEach(entry=>{
+      appendKbEntry(
+        rowDiv,
+        entry,
+        dm,
+        d=>heatColor(d.count/max),
+        d=>d.count>=1000?(d.count/1000).toFixed(1)+'k':d.count
+      );
+    });
+    kb.appendChild(rowDiv);
+  });
+}
+
+const MOUSE_SVG = {
+  width: 160,
+  renderWidth: 165,
+  pad: 3,
+  body: {x:20, y:10, w:120, h:210, rx:60},
+};
+
+function mouseSvgMetrics(){
+  const {width, renderWidth, pad, body} = MOUSE_SVG;
+  const viewX = -pad;
+  const viewY = -pad;
+  const viewW = width + pad * 2;
+  const viewH = body.y + body.h + pad * 2;
+  return {
+    viewBox: `${viewX} ${viewY} ${viewW} ${viewH}`,
+    width: renderWidth,
+    height: Math.round(renderWidth * viewH / viewW),
+  };
+}
+
+function renderMouseSvg(containerId, options){
+  const dm={}; mouseData.forEach(d=>{dm[d.id]=d;});
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  container.innerHTML='';
+
+  const clipId = `mouseClip${options.suffix}`;
+  const {viewBox,width,height} = mouseSvgMetrics();
+  const color = id => options.colorFor(id, dm[id]);
+  const label = id => options.valueFor(id, dm[id]);
+  const midFont = options.middleFontSize || 9;
+
+  const svgHTML=`
+  <svg class="mouse-svg" width="${width}" height="${height}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="10" width="120" height="210" rx="60" ry="60" fill="${THEME.mouseBody}" stroke="${THEME.mouseStroke}" stroke-width="2"/>
+    <line x1="80" y1="10" x2="80" y2="0" stroke="${THEME.mouseStroke}" stroke-width="4" stroke-linecap="round"/>
+    <clipPath id="${clipId}"><rect x="20" y="10" width="120" height="210" rx="60" ry="60"/></clipPath>
+    <rect id="svgLeft${options.suffix}" class="svg-hotspot" x="20" y="10" width="57" height="100" fill="${color('mouse_left')}" clip-path="url(#${clipId})"/>
+    <rect id="svgRight${options.suffix}" class="svg-hotspot" x="83" y="10" width="57" height="100" fill="${color('mouse_right')}" clip-path="url(#${clipId})"/>
+    <line x1="80" y1="10" x2="80" y2="110" stroke="${THEME.mouseDivider}" stroke-width="2.5"/>
+    <line x1="20" y1="110" x2="140" y2="110" stroke="${THEME.mouseDivider}" stroke-width="2"/>
+    <rect id="svgMiddle${options.suffix}" class="svg-hotspot" x="65" y="40" width="30" height="55" rx="10" fill="${color('mouse_middle')}" stroke="${THEME.mouseDivider}" stroke-width="1.5"/>
+    <text x="49"  y="80" text-anchor="middle" font-size="${options.mainFontSize}" fill="white" font-weight="bold" opacity=".9">${label('mouse_left')}</text>
+    <text x="111" y="80" text-anchor="middle" font-size="${options.mainFontSize}" fill="white" font-weight="bold" opacity=".9">${label('mouse_right')}</text>
+    <text x="80"  y="73" text-anchor="middle" font-size="${midFont}" fill="white" font-weight="bold" opacity=".9">${label('mouse_middle')}</text>
+    <g clip-path="url(#${clipId})">
+      <rect id="svgX2${options.suffix}" class="svg-hotspot" x="22" y="128" width="50" height="36" rx="6" fill="${color('mouse_x2')}" stroke="${THEME.sideButtonStroke}" stroke-width="1"/>
+      <text x="47" y="143" text-anchor="middle" font-size="10" fill="white" font-weight="bold" opacity=".9">進む</text>
+      <text x="47" y="158" text-anchor="middle" font-size="10" fill="white" opacity=".9">${label('mouse_x2')}</text>
+      <rect id="svgX1${options.suffix}" class="svg-hotspot" x="22" y="168" width="50" height="36" rx="6" fill="${color('mouse_x1')}" stroke="${THEME.sideButtonStroke}" stroke-width="1"/>
+      <text x="47" y="183" text-anchor="middle" font-size="10" fill="white" font-weight="bold" opacity=".9">戻る</text>
+      <text x="47" y="198" text-anchor="middle" font-size="10" fill="white" opacity=".9">${label('mouse_x1')}</text>
+    </g>
+  </svg>`;
+
+  const wrapper=document.createElement('div');
+  wrapper.className='mouse-svg-wrapper';
+  const svgWrap=document.createElement('div');
+  svgWrap.innerHTML=svgHTML;
+  wrapper.appendChild(svgWrap);
+  container.appendChild(wrapper);
+
+  [
+    ['svgLeft','mouse_left','左クリック'],
+    ['svgRight','mouse_right','右クリック'],
+    ['svgMiddle','mouse_middle','ホイールクリック'],
+    ['svgX1','mouse_x1','戻るボタン'],
+    ['svgX2','mouse_x2','進むボタン'],
+  ].forEach(([eid,did,lbl])=>{
+    const el=svgWrap.querySelector(`#${eid}${options.suffix}`);
+    if(!el)return;
+    el.addEventListener('mouseenter',e=>showTip(lbl,dm[did],e));
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+  });
+}
+
+function renderMouseHeatmap(){
+  const dm={}; mouseData.forEach(d=>{dm[d.id]=d;});
+  const maxC=Math.max(...MOUSE_BTN.map(b=>(dm[b.id]||{count:0}).count),1);
+  renderMouseSvg('mouse-heatmap', {
+    suffix: '',
+    mainFontSize: 11,
+    colorFor: (_id,d) => (!d||d.count===0)?THEME.empty:heatColor(d.count/maxC),
+    valueFor: (_id,d) => !d?'0':(d.count>=1000?(d.count/1000).toFixed(1)+'k':String(d.count)),
+  });
+}
+
+// キーボード押下時間ヒートマップ（avgで色付け）
+function renderKbTimeHeatmap(){
+  const valid=kbData.filter(d=>d.max<=10); // 外れ値除外
+  const maxAvg=Math.max(...valid.map(d=>d.avg),0.001);
+  const dm={}; valid.forEach(d=>{dm[d.id]=d;});
+  const kb=document.getElementById('keyboard-time');
+  if(!kb)return;
+  kb.innerHTML='';
+  KB_LAYOUT.forEach((row,rowIndex)=>{
+    const rowDiv=document.createElement('div');
+    rowDiv.className='kb-row' + (rowIndex === 0 ? ' row-function' : '') + (rowIndex === 3 ? ' row-caps' : '');
+    row.forEach(entry=>{
+      appendKbEntry(
+        rowDiv,
+        entry,
+        dm,
+        d=>heatColor(d.avg/maxAvg),
+        d=>(d.avg*1000).toFixed(0)+'ms'
+      );
+    });
+    kb.appendChild(rowDiv);
+  });
+}
+
+function renderMouseTimeHeatmap(){
+  const dm={}; mouseData.forEach(d=>{dm[d.id]=d;});
+  const maxAvg=Math.max(...MOUSE_BTN.map(b=>(dm[b.id]||{avg:0}).avg),0.001);
+  renderMouseSvg('mouse-heatmap-time', {
+    suffix: 'T',
+    mainFontSize: 10,
+    middleFontSize: 8,
+    colorFor: (_id,d) => (!d||d.avg===0)?THEME.empty:heatColor(d.avg/maxAvg),
+    valueFor: (_id,d) => !d?'0':(d.avg*1000).toFixed(0)+'ms',
+  });
+}
+
+function fmtDateTime(iso){
+  if(!iso) return '-';
+  const dt = new Date(iso);
+  if(Number.isNaN(dt.getTime())) return '-';
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const d = String(dt.getDate()).padStart(2,'0');
+  const hh = String(dt.getHours()).padStart(2,'0');
+  const mm = String(dt.getMinutes()).padStart(2,'0');
+  return `${y}/${m}/${d} ${hh}:${mm}`;
+}
+
+function fmtDuration(sec){
+  const s = Math.max(0, Math.round(sec || 0));
+  if(s>=3600){
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
+    return `${h}<span class="unit">時間</span>${m}<span class="unit">分</span>`;
+  }
+  if(s>=60){
+    const m=Math.floor(s/60), ss=s%60;
+    return `${m}<span class="unit">分</span>${ss}<span class="unit">秒</span>`;
+  }
+  return `${s}<span class="unit">秒</span>`;
+}
+
+function renderPeriodStats(kbTotal, mTotal){
+  const activeSec = Number(statsMeta.active_seconds || 0);
+  const hours = activeHours();
+  const days = statsMeta.active_days && typeof statsMeta.active_days === 'object'
+    ? Object.values(statsMeta.active_days).filter(v=>Number(v)>0).length
+    : 0;
+  const kbPerHour = hours > 0 ? kbTotal / hours : 0;
+  const mousePerHour = hours > 0 ? mTotal / hours : 0;
+  const firstAt = statsMeta.first_recorded_at || statsMeta.first_started_at;
+  const lastAt = statsMeta.last_recorded_at || statsMeta.last_active_at;
+
+  const bar = document.getElementById('periodBar');
+  bar.hidden = false;
+  bar.innerHTML = `
+    <div class="period-card"><div class="lbl">集計開始</div><div class="val">${fmtDateTime(firstAt)}</div></div>
+    <div class="period-card"><div class="lbl">最終記録</div><div class="val">${fmtDateTime(lastAt)}</div></div>
+    <div class="period-card"><div class="lbl">記録稼働時間</div><div class="val">${fmtDuration(activeSec)}</div></div>
+    <div class="period-card"><div class="lbl">記録日数</div><div class="val">${days.toLocaleString()}<span class="unit">日</span></div></div>
+    <div class="period-card"><div class="lbl">押下ペース</div><div class="val">${kbPerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>
+    <div class="period-card"><div class="lbl">クリックペース</div><div class="val">${mousePerHour.toLocaleString(undefined,{maximumFractionDigits:0})}<span class="unit">回/時</span></div></div>`;
+}
+
+// サマリー
+function renderStats(){
+  const KB_OUTLIER = 10;  // キーボード: 10秒超は外れ値
+  const M_OUTLIER  = 180; // マウス: 3分超は外れ値
+
+  const kbTotal      = kbData.reduce((s,d)=>s+d.count, 0);
+  const kbTotalSec   = kbData.reduce((s,d)=>s+(d.max<=KB_OUTLIER?d.total:0), 0);
+  const kbCountValid = kbData.reduce((s,d)=>s+(d.max<=KB_OUTLIER?d.count:0), 0);
+  const kbAvgMs      = kbCountValid>0 ? (kbTotalSec/kbCountValid) : 0;
+  const topKb        = [...kbData].sort((a,b)=>b.count-a.count)[0];
+
+  const mTotal     = mouseData.reduce((s,d)=>s+d.count, 0);
+  const mTotalSec  = mouseData.reduce((s,d)=>s+(d.max<=M_OUTLIER?d.total:0), 0);
+  const topM       = [...mouseData].sort((a,b)=>b.count-a.count)[0];
+
+  function fmtTime(sec){
+    const s = Math.round(sec);
+    if(s>=3600){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return `${h}<span class="unit">時間</span>${m}<span class="unit">分</span>`; }
+    if(s>=60){   const m=Math.floor(s/60),ss=s%60; return `${m}<span class="unit">分</span>${ss}<span class="unit">秒</span>`; }
+    return `${s}<span class="unit">秒</span>`;
+  }
+  function fmtMs(sec){ return `${(sec*1000).toFixed(1)}<span class="unit">ミリ秒</span>`; }
+
+  const bar=document.getElementById('statsBar');
+  bar.hidden=false;
+  bar.innerHTML=`
+    <div class="stat-card kb"><div class="lbl">⌨️ 総押下回数</div><div class="val">${kbTotal.toLocaleString()}<span class="unit">回</span></div></div>
+    <div class="stat-card kb"><div class="lbl">⌨️ 総押下時間</div><div class="val">${fmtTime(kbTotalSec)}</div></div>
+    <div class="stat-card kb"><div class="lbl">⌨️ 平均押下時間</div><div class="val">${fmtMs(kbAvgMs)}</div></div>
+    <div class="stat-card kb"><div class="lbl">⌨️ 最多キー</div><div class="val">${topKb?topKb.label:'-'}</div></div>
+    <div class="stat-card mouse"><div class="lbl">🖱 総クリック回数</div><div class="val">${mTotal.toLocaleString()}<span class="unit">回</span></div></div>
+    <div class="stat-card mouse"><div class="lbl">🖱 総クリック時間</div><div class="val">${fmtTime(mTotalSec)}</div></div>`;
+  renderPeriodStats(kbTotal, mTotal);
+}
+
+function renderAll(raw){
+  processData(raw);
+  renderStats();
+  document.getElementById('main').hidden=false;
+  document.getElementById('saveImgBtn').hidden=false;
+  makeBarCountPair(parseInt(document.getElementById('topNKb').value));
+  renderKbHeatmap();
+  renderMouseHeatmap();
+  renderKbTimeHeatmap();
+  renderMouseTimeHeatmap();
+  makeBarTimePair(parseInt(document.getElementById('topNKbTime').value));
+}
+
+document.getElementById('fileInput').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      renderAll(JSON.parse(ev.target.result));
+    }catch(err){alert('JSONの読み込みに失敗しました: '+err.message);}
+  };
+  reader.readAsText(file,'utf-8');
+});
+
+window.addEventListener('DOMContentLoaded', async()=>{
+  if(window.KEYCOUNTER_EMBEDDED_STATS){
+    renderAll(window.KEYCOUNTER_EMBEDDED_STATS);
+    return;
+  }
+  if(location.protocol==='file:') return;
+  try{
+    const res = await fetch('keys_stats.json', {cache:'no-store'});
+    if(res.ok) renderAll(await res.json());
+  }catch(_err){}
+});
+
+document.getElementById('topNKb').addEventListener('input',function(){
+  document.getElementById('topNKbVal').textContent=this.value;
+  if(kbData.length)makeBarCountPair(parseInt(this.value));
+});
+document.getElementById('topNKbTime').addEventListener('input',function(){
+  document.getElementById('topNKbTimeVal').textContent=this.value;
+  if(kbData.length)makeBarTimePair(parseInt(this.value));
+});
+document.querySelectorAll('[data-count-mode]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    countMode = btn.dataset.countMode || 'total';
+    document.querySelectorAll('[data-count-mode]').forEach(b=>b.classList.toggle('active', b === btn));
+    if(kbData.length)makeBarCountPair(parseInt(document.getElementById('topNKb').value));
+  });
+});
+
+async function saveAsImage(){
+  const btn = document.getElementById('saveImgBtn');
+  const fileLabel = document.getElementById('fileInputLabel');
+  const saveBtn = document.getElementById('saveImgBtn');
+  const capture = document.getElementById('capture');
+  const OUT_W = 1080;
+  btn.textContent = '⏳ 生成中...';
+  btn.disabled = true;
+  try {
+    // ボタンのみ一時非表示（タイトル・サブタイトルは表示したまま）
+    if(fileLabel) fileLabel.hidden = true;
+    if(saveBtn) saveBtn.hidden = true;
+
+    // bodyのpaddingを一時的に0にしてからcaptureの高さを取得
+    document.body.style.padding = '0';
+    document.body.classList.add('is-exporting');
+
+    async function waitForLayout(){
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+    }
+
+    async function captureTrimmed(){
+      const captureH = Math.ceil(capture.offsetHeight);
+      const srcCanvas = await html2canvas(capture, {
+        backgroundColor: '#f4f7fb',
+        scale: 2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: Math.ceil(capture.offsetWidth),
+        windowHeight: captureH,
+      });
+
+      const contentH = Math.round(captureH * 2); // html2canvas scale:2
+      const trimmedCanvas = document.createElement('canvas');
+      trimmedCanvas.width = srcCanvas.width;
+      trimmedCanvas.height = Math.min(contentH, srcCanvas.height);
+      trimmedCanvas.getContext('2d').drawImage(srcCanvas, 0, 0);
+      return trimmedCanvas;
+    }
+
+    await waitForLayout();
+    const trimmed = await captureTrimmed();
+
+    // 横幅は1080pxに統一し、高さは内容に合わせる
+    const scale = OUT_W / trimmed.width;
+    const OUT_H = Math.ceil(trimmed.height * scale);
+    const out = document.createElement('canvas');
+    out.width = OUT_W; out.height = OUT_H;
+    const ctx = out.getContext('2d');
+
+    ctx.fillStyle = '#f4f7fb';
+    ctx.fillRect(0, 0, OUT_W, OUT_H);
+    ctx.drawImage(trimmed, 0, 0, trimmed.width, trimmed.height, 0, 0, OUT_W, OUT_H);
+
+    const a = document.createElement('a');
+    a.download = 'key_stats.png';
+    a.href = out.toDataURL('image/png');
+    a.click();
+  } finally {
+    document.body.style.padding = '';
+    document.body.classList.remove('is-exporting');
+    if(fileLabel) fileLabel.hidden = false;
+    if(saveBtn) saveBtn.hidden = false;
+    btn.textContent = '📷 画像として保存';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

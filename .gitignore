@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+build/
+dist/*
+!dist/
+!dist/image.png
+release-package/
+
+build_info.json
+keys_stats.json
+*.tmp
+
+.DS_Store
+Thumbs.db
