@@ -1105,16 +1105,18 @@ async function saveAsImage(){
 
     // 横幅は1080pxに統一し、高さは内容に合わせる
     const SIDE_MARGIN = 24;
+    const BOTTOM_MARGIN = 24;
     const contentW = OUT_W - SIDE_MARGIN * 2;
     const scale = contentW / trimmed.width;
-    const OUT_H = Math.ceil(trimmed.height * scale);
+    const contentH = Math.ceil(trimmed.height * scale);
+    const OUT_H = contentH + BOTTOM_MARGIN;
     const out = document.createElement('canvas');
     out.width = OUT_W; out.height = OUT_H;
     const ctx = out.getContext('2d');
 
     ctx.fillStyle = '#f4f7fb';
     ctx.fillRect(0, 0, OUT_W, OUT_H);
-    ctx.drawImage(trimmed, 0, 0, trimmed.width, trimmed.height, SIDE_MARGIN, 0, contentW, OUT_H);
+    ctx.drawImage(trimmed, 0, 0, trimmed.width, trimmed.height, SIDE_MARGIN, 0, contentW, contentH);
 
     const a = document.createElement('a');
     a.download = 'key_stats.png';
