@@ -2,7 +2,7 @@
 
 キーボードとマウスの押下回数・押下時間を可視化する Windows 常駐アプリです。
 
-![KeyCounter screenshot](dist/image.png)
+![KeyCounter screenshot](assets/screenshot.png)
 
 ## 特徴
 
