@@ -1,10 +1,13 @@
 $ErrorActionPreference = "Stop"
 
 $projectRoot = $PSScriptRoot
+Set-Location $projectRoot
+
 $distDir = Join-Path $projectRoot "dist"
 $packageRoot = Join-Path $projectRoot ("release-package\" + (Get-Date -Format "yyyyMMdd-HHmmss"))
 $packageAppDir = Join-Path $packageRoot "KeyCounter"
 $zipPath = Join-Path $distDir "KeyCounter.zip"
+$appVersion = "v1.0.0"
 
 $python = "python"
 if (Test-Path "$projectRoot\.venv\Scripts\python.exe") {
@@ -18,7 +21,7 @@ New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
 
 $buildTime = Get-Date -Format "yyyyMMdd-HHmmss"
 $buildInfo = [ordered]@{
-  version = $buildTime
+  version = $appVersion
   built_at = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss zzz")
 }
 $buildInfo | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot "build_info.json") -Encoding UTF8

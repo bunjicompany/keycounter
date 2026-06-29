@@ -5,7 +5,6 @@ __pycache__/
 build/
 dist/*
 !dist/
-!dist/image.png
 release-package/
 
 build_info.json

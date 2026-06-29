@@ -20,6 +20,7 @@ import key_tracker
 
 
 APP_NAME = "KeyCounter"
+APP_VERSION = "v1.0.0"
 DEVELOPER_NAME = "ぶんじカンパニー"
 DEVELOPER_WEBSITE_URL = "https://bunjicompany.com/"
 SAVE_INTERVAL_SECONDS = 30
@@ -276,12 +277,10 @@ def show_info_message(title: str, message: str) -> int:
 
 
 def version_info_message() -> str:
-    info = load_build_info()
     return (
         f"{APP_NAME}\n"
         f"Developed by {DEVELOPER_NAME}\n\n"
-        f"バージョン: {info.get('version', 'unknown')}\n"
-        f"ビルド日時: {info.get('built_at', 'unknown')}"
+        f"バージョン: {APP_VERSION}"
     )
 
 
