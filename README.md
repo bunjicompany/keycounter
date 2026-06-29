@@ -21,7 +21,7 @@ KeyCounterはキーロガーではありません。
 
 個人開発アプリのため、Windows SmartScreenの警告が表示される場合があります。
 
-![KeyCounter screenshot](assets/screenshot.png)
+![KeyCounter screenshot](assets/screenshot-v1.0.0.png)
 
 ## 特徴
 
